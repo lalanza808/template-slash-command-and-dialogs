@@ -8,7 +8,7 @@ const payloads = require('./payloads');
  */
 const sendConfirmation = async (ticket) => {
   // open a DM channel for that user
-  let channel = await api.callAPIMethod('im.open', {
+  let channel = await api.callSlackAPI('im.open', {
     user: ticket.userId
   })
 
@@ -19,7 +19,7 @@ const sendConfirmation = async (ticket) => {
     urgency: ticket.urgency
   });
 
-  let result = await api.callAPIMethod('chat.postMessage', message)
+  let result = await api.callSlackAPI('chat.postMessage', message)
   debug('sendConfirmation: %o', result);
 };
 
@@ -28,7 +28,7 @@ const sendConfirmation = async (ticket) => {
 const create = async (userId, view) => {
   let values = view.state.values;
 
-  let result = await api.callAPIMethod('users.info', {
+  let result = await api.callSlackAPI('users.info', {
     user: userId
   });
 

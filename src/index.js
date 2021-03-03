@@ -7,6 +7,7 @@ const signature = require('./verifySignature');
 const api = require('./api');
 const payloads = require('./payloads');
 const debug = require('debug')('slash-command-template:index');
+const slugify = require('slugify');
 
 const app = express();
 
@@ -46,11 +47,11 @@ app.post('/command', async (req, res) => {
 
   // create the modal payload - includes the dialog structure, Slack API token,
   // and trigger ID
-  let view = payloads.modal({
+  let view = payloads.select_action_modal({
     trigger_id
   });
 
-  let result = await api.callAPIMethod('views.open', view);
+  let result = await api.callSlackAPI('views.open', view);
 
   debug('views.open: %o', result);
   return res.send('');
@@ -60,7 +61,7 @@ app.post('/command', async (req, res) => {
  * Endpoint to receive the dialog submission. Checks the verification token
  * and creates a Helpdesk ticket
  */
-app.post('/interactive', (req, res) => {
+app.post('/interactive', async (req, res) => {
   // Verify the signing secret
   if (!signature.isVerified(req)) {
     debug('Verification token mismatch');
@@ -68,8 +69,70 @@ app.post('/interactive', (req, res) => {
   }
 
   const body = JSON.parse(req.body.payload);
-  res.send('');
-  ticket.create(body.user.id, body.view);
+
+  // Handle modal interface views to user Slack
+  if ( body.actions ) {
+    const { action_id } = body.actions[0];
+    const { trigger_id } = body;
+
+    if ( action_id == 'create_new_channel_modal' ) {
+      console.log('[+] Loading new channel modal for @' + body.user.username);
+      var view = payloads.new_channel_modal({
+        trigger_id,
+        initiating_user: body.user.id
+      });
+    } else if ( action_id == 'generate_documents_modal' ) {
+      console.log('[+] Loading generate new documents modal for @' + body.user.username);
+      var view = payloads.generate_docs_modal({
+        trigger_id
+      });
+    }
+
+    let result = await api.callSlackAPI('views.push', view);
+    debug('views.push: %o', result);
+    return res.send('');
+  }
+
+  // Handle actions based upon user selection and inputs
+  if ( body.view.callback_id == 'submit_new_channel' ) {
+    console.log('[+] Creating new channel for @' + body.user.username);
+
+    // Gather vars and setup slug from customer name
+    let cx_name = body.view.state.values.customer_name.customer_name.value
+    let cx_char = cx_name.charAt(0)
+    let cx_slug = slugify(cx_name, {
+      strict: true,
+      lower: true
+    })
+
+    // Check if first character is a number so it can go into numeric group
+    if ( !isNaN(cx_char) ) {
+      var gdrive_prefix = '0-9';
+    } else {
+      var gdrive_prefix = cx_char.toUpperCase()
+    }
+
+    // Create users array to add to channel
+    const users = body.view.state.values.users_to_add.users_to_add.selected_users.map(async function(item) {
+      var result = await api.callSlackAPI('users.info', {
+        user: item
+      });
+      let slack_username = '@' + result.user.name;
+      return slack_username
+    });
+
+    await Promise.all(users).then(async function(result) {
+      // Post to Zapier to run Zap to create new channel
+      await api.postZapierWebhook(process.env.ZAPIER_WEBHOOK_submit_new_channel, {
+        'customer_name': cx_name,
+        'gdrive_prefix': gdrive_prefix,
+        'slack_channel': cx_slug,
+        'users': result
+      });
+    })
+  }
+  
+  return res.send('')
 });
 
 const server = app.listen(process.env.PORT || 5000, () => {

@@ -33,14 +33,117 @@ module.exports = {
             ])
         }
     },
-    modal: context => {
+    select_action_modal: context => {
         return {
             trigger_id: context.trigger_id,
             view: JSON.stringify({
                 type: 'modal',
                 title: {
                     type: 'plain_text',
-                    text: 'Submit a helpdesk ticket'
+                    text: 'What do you want to do?'
+                },
+                callback_id: 'select-action',
+                submit: {
+                    type: 'plain_text',
+                    text: 'Submit'
+                },
+                blocks: [
+                  {
+                    'type': 'section',
+                    'text': {
+                      'type': 'mrkdwn',
+                      'text': 'Create new Slack channel for opportunity.'
+                    },
+                    'accessory': {
+                      'type': 'button',
+                      'text': {
+                        'type': 'plain_text',
+                        'text': 'Go',
+                        'emoji': true
+                      },
+                      'action_id': 'create_new_channel_modal'
+                    }
+                  },
+                  {
+                    'type': 'section',
+                    'text': {
+                      'type': 'mrkdwn',
+                      'text': 'Generate new documents for opportunity.'
+                    },
+                    'accessory': {
+                      'type': 'button',
+                      'text': {
+                        'type': 'plain_text',
+                        'text': 'Go',
+                        'emoji': true
+                      },
+                      'action_id': 'generate_documents_modal'
+                    }
+                  }
+                ]
+            })
+        }
+    },
+    new_channel_modal: context => {
+        return {
+            trigger_id: context.trigger_id,
+            view: JSON.stringify({
+                type: 'modal',
+                title: {
+                    type: 'plain_text',
+                    text: 'Create new channel'
+                },
+                callback_id: 'submit_new_channel',
+                submit: {
+                    type: 'plain_text',
+                    text: 'Submit'
+                },
+                blocks: [
+                    {
+                        block_id: 'customer_name',
+                        type: 'input',
+                        label: {
+                            type: 'plain_text',
+                            text: 'Customer Name'
+                        },
+                        element: {
+                            action_id: 'customer_name',
+                            type: 'plain_text_input'
+                        },
+                        hint: {
+                            type: 'plain_text',
+                            text: 'Please use full spelling of the company'
+                        }
+                    },
+                    {
+                        block_id: 'users_to_add',
+                        type: 'input',
+                        label: {
+                            type: 'plain_text',
+                            text: 'Select Users to Add'
+                        },
+                        element: {
+                            action_id: 'users_to_add',
+                            type: 'multi_users_select',
+                            initial_users: [context.initiating_user]
+                        },
+                        hint: {
+                            type: 'plain_text',
+                            text: 'Include others who will need to be present'
+                        }
+                    }
+                ]
+            })
+        }
+    },
+    generate_docs_modal: context => {
+        return {
+            trigger_id: context.trigger_id,
+            view: JSON.stringify({
+                type: 'modal',
+                title: {
+                    type: 'plain_text',
+                    text: 'Generate Documents'
                 },
                 callback_id: 'submit-ticket',
                 submit: {
@@ -49,70 +152,20 @@ module.exports = {
                 },
                 blocks: [
                     {
-                        block_id: 'title_block',
+                        block_id: 'customer_name_block',
                         type: 'input',
                         label: {
                             type: 'plain_text',
-                            text: 'Title'
+                            text: 'Slack channel'
                         },
                         element: {
-                            action_id: 'title',
+                            action_id: 'customer_name',
                             type: 'plain_text_input'
                         },
                         hint: {
                             type: 'plain_text',
-                            text: '30 second summary of the problem'
+                            text: 'yo'
                         }
-                    },
-                    {
-                        block_id: 'description_block',
-                        type: 'input',
-                        label: {
-                            type: 'plain_text',
-                            text: 'Description'
-                        },
-                        element: {
-                            action_id: 'description',
-                            type: 'plain_text_input',
-                            multiline: true
-                        },
-                        optional: true
-                    },
-                    {
-                        block_id: 'urgency_block',
-                        type: 'input',
-                        label: {
-                            type: 'plain_text',
-                            text: 'Importance'
-                        },
-                        element: {
-                            action_id: 'urgency',
-                            type: 'static_select',
-                            options: [
-                                {
-                                    text: {
-                                        type: "plain_text",
-                                        text: "High"
-                                    },
-                                    value: "high"
-                                },
-                                {
-                                    text: {
-                                        type: "plain_text",
-                                        text: "Medium"
-                                    },
-                                    value: "medium"
-                                },
-                                {
-                                    text: {
-                                        type: "plain_text",
-                                        text: "Low"
-                                    },
-                                    value: "low"
-                                }
-                            ]
-                        },
-                        optional: true
                     }
                 ]
             })
