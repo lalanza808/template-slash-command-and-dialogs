@@ -98,18 +98,18 @@ app.post('/interactive', async (req, res) => {
     console.log('[+] Creating new channel for @' + body.user.username);
 
     // Gather vars and setup slug from customer name
-    let cx_name = body.view.state.values.customer_name.customer_name.value
-    let cx_char = cx_name.charAt(0)
+    let cx_name = body.view.state.values.customer_name.customer_name.value;
+    let cx_char = cx_name.charAt(0);
     let cx_slug = slugify(cx_name, {
       strict: true,
       lower: true
-    })
+    });
 
     // Check if first character is a number so it can go into numeric group
     if ( !isNaN(cx_char) ) {
       var gdrive_prefix = '0-9';
     } else {
-      var gdrive_prefix = cx_char.toUpperCase()
+      var gdrive_prefix = cx_char.toUpperCase();
     }
 
     // Create users array to add to channel
@@ -130,8 +130,28 @@ app.post('/interactive', async (req, res) => {
         'users': result
       });
     })
+  } else if ( body.view.callback_id == 'generate_documents' ) {
+    console.log('[+] Generating documents for @' + body.user.username);
+
+    // Gather vars and setup slug from customer name
+    let cx_name = body.view.state.values.customer_name.customer_name.value;
+    let cx_char = cx_name.charAt(0);
+
+    // Check if first character is a number so it can go into numeric group
+    if ( !isNaN(cx_char) ) {
+      var gdrive_prefix = '0-9';
+    } else {
+      var gdrive_prefix = cx_char.toUpperCase();
+    }
+
+    // Post to Zapier to run Zap to generate new docs in the channel
+    await api.postZapierWebhook(process.env.ZAPIER_WEBHOOK_generate_documents, {
+      'customer_name': cx_name,
+      'gdrive_prefix': gdrive_prefix,
+      'slack_channel': body.view.state.values.channel_to_post_to.channel_to_post_to.selected_channels[0],
+    });
   }
-  
+
   return res.send('')
 });
 

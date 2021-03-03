@@ -13,8 +13,8 @@ const postZapierWebhook = async (webhook_url, data) => {
       data: data
     })
     .then(res => {
-      console.log(`[.] Zapier Webhook: ${res.status}`)
       console.log(`[.] Webhook data: ${res.config.data}`)
+      console.log(`[.] Webhook status: ${res.status}`)
     })
     .catch(error => {
       console.error(error)

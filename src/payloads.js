@@ -1,38 +1,4 @@
 module.exports = {
-    confirmation: context => {
-        return {
-            channel: context.channel_id,
-            text: 'Helpdesk ticket created!',
-            blocks: JSON.stringify([
-                {
-                    type: 'section',
-                    text: {
-                        type: 'mrkdwn',
-                        text: '*Helpdesk ticket created!*'
-                    }
-                },
-                {
-                    type: 'divider'
-                },
-                {
-                    type: 'section',
-                    text: {
-                        type: 'mrkdwn',
-                        text: `*Title*\n${context.title}\n\n*Description*\n${context.description}`
-                    }
-                },
-                {
-                    type: 'context',
-                    elements: [
-                        {
-                            type: 'mrkdwn',
-                            text: `*Urgency*: ${context.urgency}`
-                        }
-                    ]
-                }
-            ])
-        }
-    },
     select_action_modal: context => {
         return {
             trigger_id: context.trigger_id,
@@ -145,18 +111,18 @@ module.exports = {
                     type: 'plain_text',
                     text: 'Generate Documents'
                 },
-                callback_id: 'submit-ticket',
+                callback_id: 'generate_documents',
                 submit: {
                     type: 'plain_text',
                     text: 'Submit'
                 },
                 blocks: [
                     {
-                        block_id: 'customer_name_block',
+                        block_id: 'customer_name',
                         type: 'input',
                         label: {
                             type: 'plain_text',
-                            text: 'Slack channel'
+                            text: 'Customer Name'
                         },
                         element: {
                             action_id: 'customer_name',
@@ -164,7 +130,40 @@ module.exports = {
                         },
                         hint: {
                             type: 'plain_text',
-                            text: 'yo'
+                            text: 'Name of the customer ie. ACME Corp, Fancy Corp LLC, Such and Such Enterprises, etc'
+                        }
+                    },
+                    {
+                        block_id: 'opportunity_name',
+                        type: 'input',
+                        label: {
+                            type: 'plain_text',
+                            text: 'Opportunity Name'
+                        },
+                        element: {
+                            action_id: 'customer_name',
+                            type: 'plain_text_input'
+                        },
+                        hint: {
+                            type: 'plain_text',
+                            text: 'Name of the opportunity, ie. MD40, PS k8s advisory/consulting, CloudOne, etc'
+                        }
+                    },
+                    {
+                        block_id: 'channel_to_post_to',
+                        type: 'input',
+                        label: {
+                            type: 'plain_text',
+                            text: 'Select channel to notify'
+                        },
+                        element: {
+                            action_id: 'channel_to_post_to',
+                            type: 'multi_channels_select',
+                            max_selected_items: 1
+                        },
+                        hint: {
+                            type: 'plain_text',
+                            text: 'Select the channel to notify when documents are generated'
                         }
                     }
                 ]
