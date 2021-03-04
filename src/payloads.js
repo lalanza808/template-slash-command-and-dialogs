@@ -141,7 +141,7 @@ module.exports = {
                             text: 'Opportunity Name'
                         },
                         element: {
-                            action_id: 'customer_name',
+                            action_id: 'opportunity_name',
                             type: 'plain_text_input'
                         },
                         hint: {

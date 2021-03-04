@@ -135,6 +135,7 @@ app.post('/interactive', async (req, res) => {
 
     // Gather vars and setup slug from customer name
     let cx_name = body.view.state.values.customer_name.customer_name.value;
+    let opp_name = body.view.state.values.opportunity_name.opportunity_name.value;
     let cx_char = cx_name.charAt(0);
 
     // Check if first character is a number so it can go into numeric group
@@ -148,6 +149,7 @@ app.post('/interactive', async (req, res) => {
     await api.postZapierWebhook(process.env.ZAPIER_WEBHOOK_generate_documents, {
       'customer_name': cx_name,
       'gdrive_prefix': gdrive_prefix,
+      'gdrive_item': cx_name + ' - ' + opp_name,
       'slack_channel': body.view.state.values.channel_to_post_to.channel_to_post_to.selected_channels[0],
     });
   }
